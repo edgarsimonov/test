@@ -2,9 +2,92 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Web App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        button, input {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+            border-radius: 5px;
+            border: none;
+        }
+        button {
+            background-color: #0088cc;
+            color: white;
+            cursor: pointer;
+        }
+        input {
+            width: 80%;
+            max-width: 300px;
+        }
+        table {
+            margin: 20px auto;
+            border-collapse: collapse;
+            width: 80%;
+            max-width: 400px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
 </head>
 <body>
+    <h1>Введите глагол</h1>
+    <input id="verbInput" type="text" placeholder="Введите глагол">
+    <br>
+    <button id="sendVerb">Отправить</button>
 
+    <h2 id="responseTitle" style="display:none;">Спряжение</h2>
+    <table id="conjugationTable" style="display:none;">
+        <thead>
+            <tr>
+                <th>Лицо</th>
+                <th>Форма</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+
+        document.getElementById('sendVerb').onclick = async () => {
+            const verb = document.getElementById('verbInput').value.trim();
+
+            if (!verb) {
+                alert("Введите глагол перед отправкой!");
+                return;
+            }
+
+            // Отправляем данные на сервер
+            const response = await fetch(`http://127.0.0.1:5000/conjugate?verb=${encodeURIComponent(verb)}`);
+            const data = await response.json();
+
+            // Обновляем таблицу
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = ''; // Очищаем предыдущие результаты
+            for (const [person, form] of Object.entries(data)) {
+                const row = `<tr><td>${person}</td><td>${form}</td></tr>`;
+                tableBody.innerHTML += row;
+            }
+
+            document.getElementById('responseTitle').style.display = 'block';
+            document.getElementById('conjugationTable').style.display = 'table';
+        };
+
+        tg.ready();
+    </script>
 </body>
 </html>
